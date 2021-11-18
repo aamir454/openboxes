@@ -1070,6 +1070,16 @@ class StockMovementService {
             log.info "Available items: ${availableItems}"
             List<SuggestedItem> suggestedItems = getSuggestedItems(availableItems, quantityRequired)
             log.info "Suggested items " + suggestedItems
+
+            def shipmentItems = ShipmentItem.findAllByRequisitionItem(requisitionItem)
+            if (shipmentItems) {
+                def shipment = shipmentItems.get(0).shipment
+                for (ShipmentItem shipmentItem : shipmentItems) {
+                    shipment.removeFromShipmentItems(shipmentItem)
+                    shipmentItem.delete()
+                }
+            }
+
             clearPicklist(requisitionItem)
             if (suggestedItems) {
                 for (SuggestedItem suggestedItem : suggestedItems) {
@@ -1082,6 +1092,8 @@ class StockMovementService {
                             null)
                 }
             }
+
+            createMissingShipmentItem(requisitionItem)
         }
     }
 
